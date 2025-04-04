@@ -1,8 +1,14 @@
 package com.OmCheeLin.javaagent.monitor;
 
+import com.sun.management.HotSpotDiagnosticMXBean;
+
+import java.io.IOException;
+import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class MemoryMonitor {
@@ -11,11 +17,51 @@ public class MemoryMonitor {
     public static void getMemoryInfo() {
         List<MemoryPoolMXBean> memoryPoolMXBeans = ManagementFactory.getMemoryPoolMXBeans();
 
-        // MemoryType: HEAP, NON_HEAP
+        // MemoryType: HEAP
         System.out.println("HEAP: ");
         doGetMemoryInfo(memoryPoolMXBeans, MemoryType.HEAP);
+        // MemoryType: NON_HEAP
         System.out.println("NON_HEAP: ");
         doGetMemoryInfo(memoryPoolMXBeans, MemoryType.NON_HEAP);
+        // NIO memory
+        System.out.println("NIO Memory: ");
+        doGetNioMemory();
+    }
+
+    public static void heapDump() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+        HotSpotDiagnosticMXBean hotSpotDiagnosticMXBean = ManagementFactory.getPlatformMXBean(HotSpotDiagnosticMXBean.class);
+        try {
+            hotSpotDiagnosticMXBean.dumpHeap(simpleDateFormat.format(new Date()) + ".hprof", true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void doGetNioMemory() {
+        final String YELLOW = "\u001B[33m";
+        final String GREEN = "\u001B[32m";
+        final String RESET = "\u001B[0m";
+
+        List<BufferPoolMXBean> bufferPoolMXBeans = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class);
+
+        System.out.printf("%s%-25s %12s %12s%s\n",
+                GREEN, "Buffer Pool", "Used(M)", "Capacity(M)", RESET);
+
+        for (BufferPoolMXBean bufferPoolMXBean : bufferPoolMXBeans) {
+            String name = bufferPoolMXBean.getName();
+            long used = bufferPoolMXBean.getMemoryUsed() / (1024 * 1024);
+            long capacity = bufferPoolMXBean.getTotalCapacity() / (1024 * 1024);
+
+            System.out.printf("%s%-25s %12d %12d%s\n",
+                    YELLOW,
+                    name,
+                    used,
+                    capacity,
+                    RESET);
+        }
+
+        System.out.println("-----------------------------------------------------------");
     }
 
     private static void doGetMemoryInfo(List<MemoryPoolMXBean> beans, MemoryType type) {
