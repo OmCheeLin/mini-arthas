@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+
 public class MemoryMonitor {
 
     // print memory info
@@ -45,7 +46,7 @@ public class MemoryMonitor {
 
         List<BufferPoolMXBean> bufferPoolMXBeans = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class);
 
-        System.out.printf("%s%-25s %12s %12s%s\n",
+        System.out.printf("%s%-35s %12s %12s%s\n",
                 GREEN, "Buffer Pool", "Used(M)", "Capacity(M)", RESET);
 
         for (BufferPoolMXBean bufferPoolMXBean : bufferPoolMXBeans) {
@@ -53,7 +54,7 @@ public class MemoryMonitor {
             long used = bufferPoolMXBean.getMemoryUsed() / (1024 * 1024);
             long capacity = bufferPoolMXBean.getTotalCapacity() / (1024 * 1024);
 
-            System.out.printf("%s%-25s %12d %12d%s\n",
+            System.out.printf("%s%-35s %12d %12d%s\n",
                     YELLOW,
                     name,
                     used,
@@ -70,7 +71,7 @@ public class MemoryMonitor {
         final String GREEN = "\u001B[32m";
         final String RESET = "\u001B[0m";
 
-        System.out.printf("%s%-25s %12s %12s %12s%s\n",
+        System.out.printf("%s%-35s %12s %12s %12s%s\n",
                 GREEN, "Memory Pool", "Used(M)", "Committed(M)", "Max(M)", RESET);
 
         beans.stream()
@@ -85,7 +86,7 @@ public class MemoryMonitor {
                     String maxDisplay = (max == -1) ? "N/A"
                             : String.format("%d", max / (1024 * 1024));
 
-                    System.out.printf("%s%-25s %12d %12d %12s%s\n",
+                    System.out.printf("%s%-35s %12d %12d %12s%s\n",
                             YELLOW,
                             name,
                             used,
