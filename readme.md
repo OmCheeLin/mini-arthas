@@ -1,6 +1,5 @@
 # Mini-Arthas - 轻量级 JVM 诊断工具
 
-
 ​**​项目作者：OmCheeLin​**​  
 **前言​**​：如果你正在学习 arthas，或者是 java-agent 等 JVM 监控技术，那么本项目是入门的一个很好的选择。
 
@@ -58,10 +57,6 @@ java -jar OmCheeLin-agent.jar
 
 ```
 
-附：修改配置
-
-![](C:\Users\17298\AppData\Roaming\marktext\images\2025-04-11-16-48-07-image.png)
-
 ---
 
 ## 🛠️ 使用指南
@@ -94,34 +89,19 @@ exetime com.example.MyController
 
 ## 🧠 实现原理
 
-### 技术架构
-
 ### 核心机制
 
 1. ​**​Java Agent 动态加载​**​
    
-   - 通过 Attach API 实现运行时注入
-   - Instrumentation API 修改类定义
+   - 通过 Attach API 实现运行时注入 agent
+   - 通过 JMX 技术，暴露的 MBean 获得实时监控指标（内存、线程栈等）
+   - ​​Instrumentation API​​ ，JVM 提供的「字节码修改入口」
 
-2. ​**​字节码增强技术​**​
-   
-   java
-   
-   复制
-   
-   ```java
-   // ByteBuddy 增强示例
-   new AgentBuilder.Default()
-    .type(ElementMatchers.named(className))
-    .transform((builder, ...) -> 
-        builder.visit(Advice.to(MyAdvice.class))
-    );
-   ```
+2. ​**​字节码增强技术​**：ByteBuddy（asm的高级封装）
 
-3. ​**​JMX 监控体系​**​
-   
-   - 通过 `ManagementFactory` 获取 MXBean
-   - 支持 MemoryPool/Thread/BufferPool 等 20+ 指标
+3. **async-profiler**：避免全局安全点偏差对CPU采样的影响
+
+4. **CFR**：反编译字节码文件（支持jdk17+)
 
 ---
 

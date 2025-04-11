@@ -12,12 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class MemoryMonitor implements Runnable {
-    @Override
-    public void run() {
-        MemoryMonitor.getMemoryInfo();
-    }
-
+public class MemoryMonitor {
     // print memory info
     public static void getMemoryInfo() {
         List<MemoryPoolMXBean> memoryPoolMXBeans = ManagementFactory.getMemoryPoolMXBeans();
