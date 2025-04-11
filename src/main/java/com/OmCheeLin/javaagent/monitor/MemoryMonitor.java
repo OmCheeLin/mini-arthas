@@ -1,6 +1,7 @@
 package com.OmCheeLin.javaagent.monitor;
 
 import com.sun.management.HotSpotDiagnosticMXBean;
+import picocli.CommandLine;
 
 import java.io.IOException;
 import java.lang.management.BufferPoolMXBean;
@@ -11,8 +12,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-
-public class MemoryMonitor {
+public class MemoryMonitor implements Runnable {
+    @Override
+    public void run() {
+        MemoryMonitor.getMemoryInfo();
+    }
 
     // print memory info
     public static void getMemoryInfo() {

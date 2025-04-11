@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 
+import static com.OmCheeLin.javaagent.Constants.AGENT_PATH;
+
 public class App {
     public static void main(String[] args) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
         // 1. execute jps
@@ -35,6 +37,6 @@ public class App {
 
         // 3. get target JVM and load agent
         VirtualMachine vm = VirtualMachine.attach(processId);
-        vm.loadAgent("D:\\java_workspace_IDEA\\mini-arthas\\target\\mini-arthas-1.0-jar-with-dependencies.jar");
+        vm.loadAgent(AGENT_PATH);
     }
 }

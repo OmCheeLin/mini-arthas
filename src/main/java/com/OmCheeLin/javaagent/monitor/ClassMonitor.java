@@ -1,18 +1,21 @@
 package com.OmCheeLin.javaagent.monitor;
 
-import org.jd.core.v1.ClassFileToJavaSourceDecompiler;
-import org.jd.core.v1.api.loader.Loader;
-import org.jd.core.v1.api.loader.LoaderException;
-import org.jd.core.v1.api.printer.Printer;
+import org.benf.cfr.reader.api.CfrDriver;
+import org.benf.cfr.reader.api.OutputSinkFactory;
+import org.benf.cfr.reader.state.ClassFileSourceImpl;
+
+import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.ProtectionDomain;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
 
 public class ClassMonitor {
 
@@ -34,18 +37,16 @@ public class ClassMonitor {
         System.out.println(str);
     }
 
-    // print the source code of class
-    public static void getClassSourceCode(Instrumentation inst) {
-        System.out.print("Enter class name: ");
-        Scanner sc = new Scanner(System.in);
-        String className = sc.next();
 
+    // print the source code of class
+    public static void getClassSourceCode(Instrumentation inst, String className) {
         Class[] classes = inst.getAllLoadedClasses();
         for (Class clazz : classes) {
             if (clazz.getName().equals(className)) {
                 ClassFileTransformer transformer = new ClassFileTransformer() {
                     @Override
                     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+                        System.out.println("字节码信息：" + classfileBuffer);
                         doGetClassSourceCode(classfileBuffer, className);
                         return ClassFileTransformer.super.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
                     }
@@ -66,61 +67,55 @@ public class ClassMonitor {
         }
     }
 
-
-    /**
-     * Please refer to the official documentation: https://github.com/java-decompiler/jd-core
-     */
-    public static void doGetClassSourceCode(byte[] bytes, String className) {
-        Loader loader = new Loader() {
-            @Override
-            public byte[] load(String internalName) throws LoaderException {
-                return bytes;
-            }
-
-            @Override
-            public boolean canLoad(String internalName) {
-                return true;
-            }
-        };
-
-        Printer printer = new Printer() {
-            protected static final String TAB = "  ";
-            protected static final String NEWLINE = "\n";
-
-            protected int indentationCount = 0;
-            protected StringBuilder sb = new StringBuilder();
-
-            @Override public String toString() { return sb.toString(); }
-
-            @Override public void start(int maxLineNumber, int majorVersion, int minorVersion) {}
-            @Override public void end() {
-                System.out.println(sb);
-            }
-
-            @Override public void printText(String text) { sb.append(text); }
-            @Override public void printNumericConstant(String constant) { sb.append(constant); }
-            @Override public void printStringConstant(String constant, String ownerInternalName) { sb.append(constant); }
-            @Override public void printKeyword(String keyword) { sb.append(keyword); }
-            @Override public void printDeclaration(int type, String internalTypeName, String name, String descriptor) { sb.append(name); }
-            @Override public void printReference(int type, String internalTypeName, String name, String descriptor, String ownerInternalName) { sb.append(name); }
-
-            @Override public void indent() { this.indentationCount++; }
-            @Override public void unindent() { this.indentationCount--; }
-
-            @Override public void startLine(int lineNumber) { for (int i=0; i<indentationCount; i++) sb.append(TAB); }
-            @Override public void endLine() { sb.append(NEWLINE); }
-            @Override public void extraLine(int count) { while (count-- > 0) sb.append(NEWLINE); }
-
-            @Override public void startMarker(int type) {}
-            @Override public void endMarker(int type) {}
-        };
-
-        ClassFileToJavaSourceDecompiler decompiler = new ClassFileToJavaSourceDecompiler();
-
+    public static void doGetClassSourceCode(byte[] classfileBuffer, String className) {
         try {
-            decompiler.decompile(loader, printer, className);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            // 1. 创建临时目录
+            Path tempDir = Files.createTempDirectory("arthas-class-dump");
+
+            // 2. 根据类名生成文件名
+            String fileName = className.replace('.', '/') + ".class";
+            File classFile = new File(tempDir.toFile(), fileName);
+
+            // 3. 确保父目录存在
+            classFile.getParentFile().mkdirs();
+
+            // 4. 写入字节码到临时文件
+            Files.write(classFile.toPath(), classfileBuffer);
+
+            // 5. 调用反编译工具
+            decompile(classFile.getAbsolutePath());
+
+            // 7. 删除临时文件
+            classFile.delete();
+            tempDir.toFile().delete();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    public static void decompile(String classFilePath) {
+        // 1. result对象
+        final StringBuilder result = new StringBuilder();
+
+        // 2. 创建CFR驱动
+        CfrDriver driver = new CfrDriver.Builder()
+                .withOutputSink(new OutputSinkFactory() {
+                    @Override
+                    public List<SinkClass> getSupportedSinks(SinkType sinkType, Collection<SinkClass> collection) {
+                        return Collections.singletonList(SinkClass.STRING);
+                    }
+
+                    @Override
+                    public <T> Sink<T> getSink(SinkType sinkType, SinkClass sinkClass) {
+                        return data -> result.append(data);
+                    }
+                })
+                .build();
+
+        // 3. 执行反编译
+        driver.analyse(Collections.singletonList(classFilePath));
+
+        // 4. 返回结果
+        System.out.println(result.toString());
     }
 }

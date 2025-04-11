@@ -11,14 +11,16 @@
     <url>http://maven.apache.org</url>
 
     <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.jd</groupId>
-            <artifactId>jd-core</artifactId>
-            <version>1.1.3</version>
+            <groupId>org.benf</groupId>
+            <artifactId>cfr</artifactId>
+            <version>0.152</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
@@ -29,6 +31,11 @@
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy-agent</artifactId>
             <version>1.14.10</version>
+        </dependency>
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.7.6</version>
         </dependency>
     </dependencies>
 
@@ -70,6 +77,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <compilerArgs>
+                        <arg>&#45;&#45;add-exports</arg>
+                        <arg>jdk.attach/com.sun.tools.attach=ALL-UNAMED</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>-->
         </plugins>
     </build>
 </project>
