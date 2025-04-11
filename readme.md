@@ -1,8 +1,5 @@
 # Mini-Arthas - 轻量级 JVM 诊断工具
 
-https://img.shields.io/badge/Java-11%2B-orange  
-https://img.shields.io/badge/License-MIT-blue  
-https://img.shields.io/badge/Purpose-Education%20%26%20Research-green
 
 ​**​项目作者：OmCheeLin​**​  
 **前言​**​：如果你正在学习 arthas，或者是 java-agent 等 JVM 监控技术，那么本项目是入门的一个很好的选择。
